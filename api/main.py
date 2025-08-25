@@ -1,12 +1,13 @@
-import json
-
 import psycopg
 from fastapi import FastAPI
 from starlette.responses import HTMLResponse
 
-from src.config import settings
+from src.auth.router import user_auth_router
+from src.config import DB_CONFIG
 
 app = FastAPI()
+
+app.include_router(user_auth_router)
 
 
 @app.get("/")
@@ -23,9 +24,12 @@ def read_item(item_id: int):
 
 @app.get("/postgres")
 def read_postgres():
-    with psycopg.connect(host='db', dbname='booking', user='postgres', password='secret') as conn:
+    with psycopg.connect(host=DB_CONFIG.host,
+                         dbname=DB_CONFIG.dbname,
+                         user=DB_CONFIG.user,
+                         password=DB_CONFIG.password,
+                         port=DB_CONFIG.port) as conn:
         with conn.cursor() as cur:
             cur.execute('SELECT now()')
             now = cur.fetchone()
             return {"now": now}
-
