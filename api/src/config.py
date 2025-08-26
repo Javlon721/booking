@@ -14,6 +14,7 @@ class DBConfig:
     password: str
     host: str
     port: str
+    connection_pool_max_size: int
 
 
 class _Settings(BaseSettings):
@@ -27,6 +28,7 @@ class _Settings(BaseSettings):
     DB_USER: str
     DB_HOST: str
     DB_PORT: str
+    CONNECTION_POOL_MAX_SIZE: int
 
     # OAuth2
     JWT_ALGORITHM: str
@@ -39,7 +41,8 @@ class _Settings(BaseSettings):
             user=self.DB_USER,
             password=self.POSTGRES_PASSWORD,
             host=self.DB_HOST,
-            port=self.DB_PORT
+            port=self.DB_PORT,
+            connection_pool_max_size=self.CONNECTION_POOL_MAX_SIZE,
         )
 
 
