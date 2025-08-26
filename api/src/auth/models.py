@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 from typing import Annotated
 
@@ -21,6 +21,7 @@ class UserLogin(BaseModel):
 class UserCreateInfo(BaseModel):
     first_name: Annotated[str, Field(min_length=2)]
     last_name: str | None = None
+    date_of_birth: date
     phone: Annotated[str, Field(min_length=9, max_length=9)]
 
 
