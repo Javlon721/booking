@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Form
 from fastapi.security import OAuth2PasswordBearer
 
+from src.auth.db_queries import create_user, add_new_user_info
 from src.auth.models import UserCreateInfo, UserLogin
-from src.auth.utils import is_password_hashed
+from src.db.pool_dependency import ConnectionPoolDepends
 
 user_auth_router = APIRouter(prefix="/auth")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -16,13 +17,15 @@ def sing_in():
 
 
 @user_auth_router.post("/signup")
-def sing_up(user_login: Annotated[UserLogin, Body(alias="login")],
-            user_info: Annotated[UserCreateInfo, Body(alias="info")]):
-    return {
-        "user_login": {
-            "login": user_login.login,
-            "password": user_login.hash_password,
-            "is_hashed": is_password_hashed(user_login.hash_password),
-        },
-        "user_info": user_info.model_dump(exclude_unset=True)
-    }
+def sing_up(
+        user_login: Annotated[UserLogin, Form()],
+        conn_pool: ConnectionPoolDepends
+):
+    return create_user(conn_pool, user_login)
+
+
+@user_auth_router.post("/signup/user_info/{user_id}")
+def create_new_user_info(
+        user_id: int,
+        user_info: Annotated[UserCreateInfo, Form()], conn_pool: ConnectionPoolDepends):
+    return add_new_user_info(conn_pool, user_id, user_info)
