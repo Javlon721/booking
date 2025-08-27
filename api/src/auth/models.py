@@ -17,6 +17,11 @@ class UserLogin(BaseModel):
             return hash_password(self.password)
         return self.password
 
+    def identifications(self) -> dict:
+        return {
+            'login': self.login,
+        }
+
 
 class UserCreateInfo(BaseModel):
     first_name: Annotated[str, Field(min_length=2)]

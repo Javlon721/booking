@@ -1,9 +1,8 @@
-import psycopg
 from fastapi import FastAPI
 from starlette.responses import HTMLResponse
 
 from src.auth.router import user_auth_router
-from src.config import DB_CONFIG
+from src.db.pool_dependency import ConnectionPoolDepends
 
 app = FastAPI()
 
@@ -23,13 +22,6 @@ def read_item(item_id: int):
 
 
 @app.get("/postgres")
-def read_postgres():
-    with psycopg.connect(host=DB_CONFIG.host,
-                         dbname=DB_CONFIG.dbname,
-                         user=DB_CONFIG.user,
-                         password=DB_CONFIG.password,
-                         port=DB_CONFIG.port) as conn:
-        with conn.cursor() as cur:
-            cur.execute('SELECT now()')
-            now = cur.fetchone()
-            return {"now": now}
+def read_postgres(conn_pool: ConnectionPoolDepends):
+    with conn_pool.getconn() as conn:
+        return conn.execute("SELECT * from users_info").fetchone()

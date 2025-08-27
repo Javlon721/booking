@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Form
 from fastapi.security import OAuth2PasswordBearer
 
-from src.auth.db_queries import create_user, add_new_user_info
+from src.auth.db_queries import create_user, add_new_user_info, get_user_credentials
 from src.auth.models import UserCreateInfo, UserLogin
 from src.db.pool_dependency import ConnectionPoolDepends
 
@@ -12,8 +12,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 @user_auth_router.post("/login")
-def sing_in():
-    return {"message": "Login"}
+def sing_in(user_login: Annotated[UserLogin, Form()], conn_pool: ConnectionPoolDepends):
+    return get_user_credentials(conn_pool, user_login)
 
 
 @user_auth_router.post("/signup")
