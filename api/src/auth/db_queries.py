@@ -44,9 +44,8 @@ def add_new_user_info(conn_pool: ConnectionPool, user_id: int, user_info: UserCr
 
 
 def get_user_login_info(conn_pool: ConnectionPool, user_login: UserLogin) -> UserLogin | None:
-    table = 'users_login'
+    table, pool_columns = 'users_login', "*"
     indentify_by = user_login.identifications()
-    pool_columns = "*"
     query = concat_sql_queries(
         select_from_table(pool_columns, table),
         add_and_conditions(list_dict_keys(indentify_by))
