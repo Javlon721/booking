@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from psycopg.errors import UniqueViolation, ForeignKeyViolation
 from psycopg.rows import class_row
-from psycopg.sql import SQL, Placeholder, Identifier
 from psycopg_pool import ConnectionPool
 
 from src.auth.models import UserLogin, UserCreateInfo
@@ -28,14 +27,11 @@ def create_user(conn_pool: ConnectionPool, user_login: UserLogin) -> int:
 
 
 def add_new_user_info(conn_pool: ConnectionPool, user_id: int, user_info: UserCreateInfo):
+    table, returning = 'users_info', "user_id"
     info = user_info.model_dump(exclude_unset=True, exclude_defaults=True)
     info.update({"user_id": user_id})
+    query = insert_into(table, list_dict_keys(info), returning)
 
-    set_columns = info.keys()
-    query = SQL("insert into users_info ({columns}) values ({values}) returning user_id").format(
-        columns=SQL(', ').join(map(Identifier, set_columns)),
-        values=SQL(', ').join(map(Placeholder, set_columns))
-    )
     try:
         with conn_pool.getconn() as conn:
             return conn.execute(query, info).fetchone()[0]
