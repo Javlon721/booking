@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from starlette.responses import HTMLResponse
 
+from src.auth.dependencies import AuthorizeUserDepends
 from src.auth.router import user_auth_router
 from src.db.pool_dependency import ConnectionPoolDepends
 
@@ -21,7 +22,7 @@ def read_item(item_id: int):
     raise ValueError('Item id must be greater than 0')
 
 
-@app.get("/postgres")
+@app.get("/postgres", dependencies=[AuthorizeUserDepends])
 def read_postgres(conn_pool: ConnectionPoolDepends):
     with conn_pool.getconn() as conn:
-        return conn.execute("SELECT * from users_info").fetchone()
+        return conn.execute("SELECT * from users_info").fetchall()
