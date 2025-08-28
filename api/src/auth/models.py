@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime, date
 from decimal import Decimal
 from typing import Annotated
@@ -41,3 +42,9 @@ class UserInfo(UserCreateInfo):
     created_at: datetime
     customer_wallet: Decimal
     admin_wallet: Decimal
+
+
+@dataclass
+class Token:
+    access_token: str
+    token_type: str

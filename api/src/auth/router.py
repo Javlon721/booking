@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 
-from src.auth.db_queries import create_user, add_new_user_info, get_user_credentials
-from src.auth.models import UserCreateInfo, UserLogin
+from src.auth.db_queries import create_user, add_new_user_info, authenticate_user
+from src.auth.models import UserCreateInfo, UserLogin, Token
+from src.auth.utils import create_access_token
 from src.db.pool_dependency import ConnectionPoolDepends
 
 user_auth_router = APIRouter(prefix="/auth")
@@ -13,7 +14,15 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 @user_auth_router.post("/login")
 def sing_in(user_login: Annotated[UserLogin, Form()], conn_pool: ConnectionPoolDepends):
-    return get_user_credentials(conn_pool, user_login)
+    user = authenticate_user(conn_pool, user_login)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+
+    token_data = {"sub": user.login}
+    access_token = create_access_token(token_data)
+
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @user_auth_router.post("/signup")

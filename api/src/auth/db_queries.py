@@ -73,12 +73,3 @@ def authenticate_user(conn_pool: ConnectionPool, user_login: UserLogin) -> UserL
         return None
 
     return user_credentials
-
-
-def get_user_credentials(conn_pool: ConnectionPool, user_login: UserLogin):
-    user = authenticate_user(conn_pool, user_login)
-
-    if not user:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
-
-    return user
