@@ -17,6 +17,13 @@ class DBConfig:
     connection_pool_max_size: int
 
 
+@dataclass
+class JWTConfig:
+    algorithm: str
+    secret_key: str
+    access_token_expire_minutes: float
+
+
 class _Settings(BaseSettings):
     # Admin Credentials
     ADMIN_LOGIN: str
@@ -45,6 +52,14 @@ class _Settings(BaseSettings):
             connection_pool_max_size=self.CONNECTION_POOL_MAX_SIZE,
         )
 
+    def jwt_config(self) -> JWTConfig:
+        return JWTConfig(
+            algorithm=self.JWT_ALGORITHM,
+            secret_key=self.JWT_SECRET_KEY,
+            access_token_expire_minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES,
+        )
+
 
 SETTINGS = _Settings(_env_file=env_file)
 DB_CONFIG = SETTINGS.db_config()
+JWT_CONFIG = SETTINGS.jwt_config()
