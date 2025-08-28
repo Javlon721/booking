@@ -7,16 +7,20 @@ from psycopg_pool import ConnectionPool
 from src.auth.models import UserLogin, UserCreateInfo
 from src.auth.utils import verify_password
 from src.db.sql_queries.conditions import add_and_conditions
+from src.db.sql_queries.insert import insert_into
 from src.db.sql_queries.select_actions import select_from_table
 from src.db.sql_queries.utils import concat_sql_queries
 from src.utils import list_dict_keys
 
 
-def create_user(conn_pool: ConnectionPool, user_login: UserLogin):
-    query = SQL("insert into users_login (login, password) values (%s, %s) returning user_id")
+def create_user(conn_pool: ConnectionPool, user_login: UserLogin) -> int:
+    table, returning = 'users_login', "user_id"
+    data = user_login.db_data()
+    new_query = insert_into(table, list_dict_keys(data), returning)
+
     try:
         with conn_pool.getconn() as conn:
-            return conn.execute(query, (user_login.login, user_login.hash_password)).fetchone()[0]
+            return conn.execute(new_query, data).fetchone()[0]
     except UniqueViolation:
         raise HTTPException(status_code=400, detail="User already exists")
     except Exception:

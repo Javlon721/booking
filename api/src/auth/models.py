@@ -22,6 +22,12 @@ class UserLogin(BaseModel):
             'login': self.login,
         }
 
+    def db_data(self) -> dict:
+        return {
+            'login': self.login,
+            'password': self.hash_password,
+        }
+
 
 class UserCreateInfo(BaseModel):
     first_name: Annotated[str, Field(min_length=2)]
