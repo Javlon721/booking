@@ -43,7 +43,7 @@ def add_new_user_info(conn_pool: ConnectionPool, user_id: int, user_info: UserCr
         raise HTTPException(status_code=400, detail="Something went wrong")
 
 
-def get_user_login_info(conn_pool: ConnectionPool, user_login: UserLogin) -> UserLogin:
+def get_user_login_info(conn_pool: ConnectionPool, user_login: UserLogin) -> UserLogin | None:
     table = 'users_login'
     indentify_by = user_login.identifications()
     pool_columns = "*"
@@ -54,21 +54,32 @@ def get_user_login_info(conn_pool: ConnectionPool, user_login: UserLogin) -> Use
     try:
         with conn_pool.getconn() as conn:
             conn.row_factory = class_row(UserLogin)
-            return conn.execute(query, indentify_by).fetchone()
+            result = conn.execute(query, indentify_by).fetchone()
+
+            if not result:
+                return None
+
+            return result
     except Exception:
         raise HTTPException(status_code=400, detail="Something went wrong")
 
 
-def authenticate_user(conn_pool: ConnectionPool, user_login: UserLogin):
+def authenticate_user(conn_pool: ConnectionPool, user_login: UserLogin) -> UserLogin | None:
     user_credentials = get_user_login_info(conn_pool, user_login)
+
+    if not user_credentials:
+        return None
+
     if not verify_password(user_login.password, user_credentials.password):
-        raise HTTPException(
-            status_code=400,
-            detail="Incorrect username or password"
-        )
+        return None
+
     return user_credentials
 
 
 def get_user_credentials(conn_pool: ConnectionPool, user_login: UserLogin):
     user = authenticate_user(conn_pool, user_login)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+
     return user
