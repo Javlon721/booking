@@ -14,6 +14,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 @dataclass
 class TokenData:
     username: str | None = None
+    user_id: int | None = None
 
 
 def authorize_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
@@ -25,11 +26,12 @@ def authorize_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
     try:
         decoded_data = jwt.decode(token, JWT_CONFIG.secret_key, algorithms=[JWT_CONFIG.algorithm])
         sub = decoded_data.get("sub")
+        user_id = decoded_data.get("user_id")
 
-        if sub is None:
+        if sub is None or user_id is None:
             raise credentials_exception
 
-        token_data = TokenData(username=sub)
+        token_data = TokenData(username=sub, user_id=user_id)
 
     except ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")

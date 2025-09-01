@@ -1,9 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Form, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Form
+from fastapi.security import OAuth2PasswordRequestForm
 
-from src.auth.db_queries import create_user, add_new_user_info, authenticate_user
-from src.auth.models import UserCreateInfo, UserLogin, Token
+from src.auth.db_queries import create_user, authenticate_user, add_new_user_info
+from src.auth.dependencies import TokenData, AuthorizeUserDepends
+from src.auth.models import Token, UserCreateInfo
 from src.auth.utils import create_access_token
 from src.db.pool_dependency import ConnectionPoolDepends
 
@@ -11,13 +13,13 @@ user_auth_router = APIRouter(prefix="/auth")
 
 
 @user_auth_router.post("/login")
-def sing_in(user_login: Annotated[UserLogin, Form()], conn_pool: ConnectionPoolDepends):
-    user = authenticate_user(conn_pool, user_login)
+def sing_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], conn_pool: ConnectionPoolDepends):
+    user = authenticate_user(conn_pool, form_data)
 
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    token_data = {"sub": user.login}
+    token_data = {"sub": user.login, "user_id": user.user_id}
     access_token = create_access_token(token_data)
 
     return Token(access_token=access_token, token_type="bearer")
@@ -25,14 +27,14 @@ def sing_in(user_login: Annotated[UserLogin, Form()], conn_pool: ConnectionPoolD
 
 @user_auth_router.post("/signup")
 def sing_up(
-        user_login: Annotated[UserLogin, Form()],
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         conn_pool: ConnectionPoolDepends
 ):
-    return create_user(conn_pool, user_login)
+    return create_user(conn_pool, form_data)
 
 
-@user_auth_router.post("/signup/user_info/{user_id}")
+@user_auth_router.post("/signup/user_info/")
 def create_new_user_info(
-        user_id: int,
-        user_info: Annotated[UserCreateInfo, Form()], conn_pool: ConnectionPoolDepends):
-    return add_new_user_info(conn_pool, user_id, user_info)
+        user_info: Annotated[UserCreateInfo, Form()], conn_pool: ConnectionPoolDepends,
+        token_data: Annotated[TokenData, AuthorizeUserDepends]):
+    return add_new_user_info(conn_pool, token_data.user_id, user_info)

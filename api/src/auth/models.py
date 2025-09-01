@@ -5,29 +5,11 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
-from src.auth.utils import hash_password, is_password_hashed
-
 
 class UserLogin(BaseModel):
+    user_id: Annotated[int, Field(gt=0)]
     login: Annotated[str, Field(min_length=7, max_length=100)]
-    password: Annotated[str, Field(min_length=5, max_length=100)]
-
-    @property
-    def hash_password(self) -> str:
-        if not is_password_hashed(self.password):
-            return hash_password(self.password)
-        return self.password
-
-    def identifications(self) -> dict:
-        return {
-            'login': self.login,
-        }
-
-    def db_data(self) -> dict:
-        return {
-            'login': self.login,
-            'password': self.hash_password,
-        }
+    hashed_password: Annotated[str, Field(min_length=5, max_length=100, alias='password')]
 
 
 class UserCreateInfo(BaseModel):
