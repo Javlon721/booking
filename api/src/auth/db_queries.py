@@ -28,9 +28,11 @@ def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm
             result: UserLogin = conn.execute(query, table_data).fetchone()
 
             return result
-    except UniqueViolation:
+    except UniqueViolation as e:
+        print(e)
         raise HTTPException(status_code=400, detail="User already exists")
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail="Something went wrong")
 
 
@@ -50,9 +52,11 @@ def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordReq
                 return None
 
             return result
-    except ValidationError:
+    except ValidationError as e:
+        print(e)
         raise ValidationError("Parsing user info from user_login failed")
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail="Something went wrong")
 
 
