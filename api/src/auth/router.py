@@ -8,10 +8,10 @@ from src.auth.models import Token
 from src.auth.utils import create_access_token
 from src.db.pool_dependency import ConnectionPoolDepends
 
-user_auth_router = APIRouter(prefix="/auth")
+auth_router = APIRouter(prefix="/auth")
 
 
-@user_auth_router.post("/login")
+@auth_router.post("/login")
 def sing_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], conn_pool: ConnectionPoolDepends):
     user = authenticate_user(conn_pool, form_data)
 
@@ -24,7 +24,7 @@ def sing_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], conn_poo
     return Token(access_token=access_token, token_type="bearer")
 
 
-@user_auth_router.post("/signup")
+@auth_router.post("/signup")
 def sing_up(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         conn_pool: ConnectionPoolDepends
