@@ -4,6 +4,7 @@ from typing import Any
 import jwt
 from passlib.context import CryptContext
 
+from src.auth.models import UserLogin, Token
 from src.config import JWT_CONFIG
 from src.utils import deep_copy
 
@@ -35,3 +36,10 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
     result = jwt.encode(to_encode, JWT_CONFIG.secret_key, algorithm=JWT_CONFIG.algorithm)
 
     return result
+
+
+def create_user_tokens(user: UserLogin):
+    token_data = {"sub": user.login, "user_id": user.user_id}
+    access_token = create_access_token(token_data)
+
+    return Token(access_token=access_token, token_type="bearer")

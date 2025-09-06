@@ -4,8 +4,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.auth.db_queries import create_user, authenticate_user
-from src.auth.models import Token
-from src.auth.utils import create_access_token
+from src.auth.utils import create_user_tokens
 from src.db.pool_dependency import ConnectionPoolDepends
 
 auth_router = APIRouter(prefix="/auth")
@@ -18,10 +17,8 @@ def sing_in(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], conn_poo
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    token_data = {"sub": user.login, "user_id": user.user_id}
-    access_token = create_access_token(token_data)
-
-    return Token(access_token=access_token, token_type="bearer")
+    tokens = create_user_tokens(user)
+    return tokens
 
 
 @auth_router.post("/signup")
