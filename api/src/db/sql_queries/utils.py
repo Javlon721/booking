@@ -1,5 +1,7 @@
 from psycopg.sql import Composed, SQL, Identifier, Placeholder
 
+from src.db.sql_queries.columns import columns_from
+
 
 def create_column_assignments(columns: list[str], join_by: SQL, *, placeholder_postfix: str = '') -> Composed:
     if is_query_empty(join_by):
@@ -16,6 +18,15 @@ def is_query_empty(query: Composed | SQL) -> bool:
 
 def concat_sql_queries(*queries: Composed) -> Composed:
     return Composed(queries)
+
+
+def get_returning_values(columns: list[str] | None = None) -> Composed:
+    if not columns:
+        result = SQL("*")
+    else:
+        result = columns_from(columns)
+
+    return result
 
 
 if __name__ == '__main__':
