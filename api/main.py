@@ -2,12 +2,14 @@ from fastapi import FastAPI
 from starlette.responses import HTMLResponse
 
 from src.auth.dependencies import AuthorizeUserDepends
-from src.auth.router import user_auth_router
+from src.auth.router import auth_router
 from src.db.pool_dependency import ConnectionPoolDepends
+from src.user.router import user_router
 
 app = FastAPI()
 
-app.include_router(user_auth_router)
+app.include_router(auth_router)
+app.include_router(user_router)
 
 
 @app.get("/")
