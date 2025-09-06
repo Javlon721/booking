@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -14,3 +15,10 @@ class UserCreateInfo(BaseModel):
 
 class UserUpdateInfo(UserCreateInfo, SetNonesMixin):
     pass
+
+
+class UserInfo(UserCreateInfo):
+    user_id: int
+    created_at: datetime
+    customer_wallet: Decimal = Field(ge=0)
+    admin_wallet: Decimal = Field(ge=0)

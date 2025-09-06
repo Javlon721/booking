@@ -2,13 +2,17 @@ from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException
 from psycopg.errors import UniqueViolation, ForeignKeyViolation
+from psycopg.rows import class_row
 
 from src.auth.dependencies import AuthorizeUserDepends
 from src.auth.models import TokenData
 from src.db.pool_dependency import ConnectionPoolDepends
+from src.db.sql_queries.conditions import add_and_conditions
 from src.db.sql_queries.insert import insert_into
+from src.db.sql_queries.select_actions import select_from_table
 from src.db.sql_queries.update_action import update_row
-from src.user.models import UserCreateInfo, UserUpdateInfo
+from src.db.sql_queries.utils import concat_sql_queries
+from src.user.models import UserCreateInfo, UserUpdateInfo, UserInfo
 from src.utils import list_dict_keys
 
 user_router = APIRouter(
@@ -53,6 +57,26 @@ def create_new_user_info(
     try:
         with conn_pool.getconn() as conn:
             return conn.execute(query, info).fetchone()
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Something went wrong")
+
+
+@user_router.get("/info/")
+def create_new_user_info(
+        conn_pool: ConnectionPoolDepends,
+        token_data: Annotated[TokenData, AuthorizeUserDepends]):
+    table, columns = 'users_info', '*'
+    identify_user = {"user_id": token_data.user_id}
+    query = concat_sql_queries(
+        select_from_table(columns, table),
+        add_and_conditions(list_dict_keys(identify_user))
+    )
+    try:
+        with conn_pool.getconn() as conn:
+            conn.row_factory = class_row(UserInfo)
+            result: UserInfo = conn.execute(query, identify_user).fetchone()
+            return result.model_dump(exclude_none=True)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Something went wrong")
