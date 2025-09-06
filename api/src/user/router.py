@@ -1,12 +1,13 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException
+from psycopg.errors import UniqueViolation, ForeignKeyViolation
 
 from src.auth.dependencies import AuthorizeUserDepends
 from src.auth.models import TokenData
 from src.db.pool_dependency import ConnectionPoolDepends
+from src.db.sql_queries.insert import insert_into
 from src.db.sql_queries.update_action import update_row
-from src.user.db_queries import add_new_user_info
 from src.user.models import UserCreateInfo, UserUpdateInfo
 from src.utils import list_dict_keys
 
@@ -19,7 +20,22 @@ user_router = APIRouter(
 def create_new_user_info(
         user_info: Annotated[UserCreateInfo, Form()], conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    return add_new_user_info(conn_pool, token_data.user_id, user_info)
+    table, returning = 'users_info', "user_id"
+
+    info = user_info.model_dump(exclude_unset=True, exclude_defaults=True)
+    info.update({"user_id": token_data.user_id})
+
+    query = insert_into(table, list_dict_keys(info), returning=[returning])
+
+    try:
+        with conn_pool.getconn() as conn:
+            return conn.execute(query, info).fetchone()[0]
+    except UniqueViolation:
+        raise HTTPException(status_code=400, detail="User info already set")
+    except ForeignKeyViolation:
+        raise HTTPException(status_code=400, detail=f"User {token_data.user_id} doesn't exist")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Something went wrong")
 
 
 @user_router.put("/update/info/")
