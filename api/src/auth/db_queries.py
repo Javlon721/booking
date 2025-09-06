@@ -1,11 +1,11 @@
 from fastapi import HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from psycopg.errors import UniqueViolation, ForeignKeyViolation
+from psycopg.errors import UniqueViolation
 from psycopg.rows import class_row
 from psycopg_pool import ConnectionPool
 from pydantic import ValidationError
 
-from src.auth.models import UserLogin, UserCreateInfo
+from src.auth.models import UserLogin
 from src.auth.utils import verify_password, hash_password
 from src.db.sql_queries.conditions import add_and_conditions
 from src.db.sql_queries.insert import insert_into
@@ -31,24 +31,7 @@ def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm
         raise HTTPException(status_code=400, detail="Something went wrong")
 
 
-def add_new_user_info(conn_pool: ConnectionPool, user_id: int, user_info: UserCreateInfo):
-    table, returning = 'users_info', "user_id"
-    info = user_info.model_dump(exclude_unset=True, exclude_defaults=True)
-    info.update({"user_id": user_id})
-    query = insert_into(table, list_dict_keys(info), returning)
-
-    try:
-        with conn_pool.getconn() as conn:
-            return conn.execute(query, info).fetchone()[0]
-    except UniqueViolation:
-        raise HTTPException(status_code=400, detail="User info already set")
-    except ForeignKeyViolation:
-        raise HTTPException(status_code=400, detail=f"User {user_id} doesn't exist")
-    except Exception:
-        raise HTTPException(status_code=400, detail="Something went wrong")
-
-
-def get_user_login_info(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
+def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
     table, pool_columns = 'users_login', "*"
     indentify_by = {"login": form_data.username, }
     query = concat_sql_queries(
@@ -71,7 +54,7 @@ def get_user_login_info(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequ
 
 
 def authenticate_user(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
-    user_credentials = get_user_login_info(conn_pool, form_data)
+    user_credentials = get_user_credentials(conn_pool, form_data)
 
     if not user_credentials:
         return None

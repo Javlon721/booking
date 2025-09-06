@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Annotated
 
 import jwt
@@ -6,15 +5,10 @@ from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from jwt import ExpiredSignatureError
 
+from src.auth.models import TokenData
 from src.config import JWT_CONFIG
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
-
-@dataclass
-class TokenData:
-    username: str | None = None
-    user_id: int | None = None
 
 
 def authorize_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:

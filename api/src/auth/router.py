@@ -1,11 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Depends, Form
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from src.auth.db_queries import create_user, authenticate_user, add_new_user_info
-from src.auth.dependencies import TokenData, AuthorizeUserDepends
-from src.auth.models import Token, UserCreateInfo
+from src.auth.db_queries import create_user, authenticate_user
+from src.auth.models import Token
 from src.auth.utils import create_access_token
 from src.db.pool_dependency import ConnectionPoolDepends
 
@@ -31,10 +30,3 @@ def sing_up(
         conn_pool: ConnectionPoolDepends
 ):
     return create_user(conn_pool, form_data)
-
-
-@user_auth_router.post("/signup/user_info/")
-def create_new_user_info(
-        user_info: Annotated[UserCreateInfo, Form()], conn_pool: ConnectionPoolDepends,
-        token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    return add_new_user_info(conn_pool, token_data.user_id, user_info)
