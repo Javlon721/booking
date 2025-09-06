@@ -4,12 +4,16 @@ from src.db.sql_queries.columns import columns_from
 
 
 def insert_into(table: str, columns: list[str], returning: str) -> Composed:
-    template = SQL('insert into {table} ({coumns}) values ({values}) returning {id}')
+    template = SQL('insert into {table} ({coumns}) values ({values}) returning {return_vals}')
+    if returning == "*":
+        return_vals = SQL("*")
+    else:
+        return_vals = Identifier(returning)
     return template.format(
         table=Identifier(table),
         coumns=columns_from(columns),
         values=SQL(', ').join(map(Placeholder, columns)),
-        id=Identifier(returning)
+        return_vals=return_vals
     )
 
 

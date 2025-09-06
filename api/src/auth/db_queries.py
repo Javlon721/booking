@@ -14,8 +14,8 @@ from src.db.sql_queries.utils import concat_sql_queries
 from src.utils import list_dict_keys
 
 
-def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm) -> int:
-    table, returning = 'users_login', "user_id"
+def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm) -> UserLogin:
+    table, returning = 'users_login', "*"
     table_data = {
         "login": user_login.username,
         "password": hash_password(user_login.password),
@@ -24,11 +24,14 @@ def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm
 
     try:
         with conn_pool.getconn() as conn:
-            return conn.execute(query, table_data).fetchone()[0]
+            conn.row_factory = class_row(UserLogin)
+            result: UserLogin = conn.execute(query, table_data).fetchone()
+
+            return result
     except UniqueViolation:
         raise HTTPException(status_code=400, detail="User already exists")
     except Exception:
-        raise HTTPException(status_code=400, detail="Something went wrong")
+        raise HTTPException(status_code=500, detail="Something went wrong")
 
 
 def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
@@ -50,7 +53,7 @@ def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordReq
     except ValidationError:
         raise ValidationError("Parsing user info from user_login failed")
     except Exception:
-        raise HTTPException(status_code=400, detail="Something went wrong")
+        raise HTTPException(status_code=500, detail="Something went wrong")
 
 
 def authenticate_user(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
