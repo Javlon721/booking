@@ -17,10 +17,8 @@ USERS_LOGIN_TABLE = 'users_login'
 
 
 def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm) -> UserLogin:
-    table_data = {
-        "user_id": user_login.username,
-        "password": hash_password(user_login.password),
-    }
+    user = UserLogin(user_id=user_login.username, password=hash_password(user_login.password))
+    table_data = user.model_dump(by_alias=True)
     query = insert_into(USERS_LOGIN_TABLE, list_dict_keys(table_data))
 
     try:
