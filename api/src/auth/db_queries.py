@@ -38,7 +38,7 @@ def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm
 
 
 def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
-    indentify_by = {"user_id": form_data.username, }
+    indentify_by = UserLogin.indentify_by(form_data.username)
     query = concat_sql_queries(
         select_from_table(USERS_LOGIN_TABLE),
         add_and_conditions(list_dict_keys(indentify_by))
