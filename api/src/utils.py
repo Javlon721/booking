@@ -1,5 +1,7 @@
 import copy
-from typing import Any
+import time
+from contextlib import contextmanager
+from typing import Any, Callable
 
 from pydantic import model_validator
 
@@ -20,3 +22,11 @@ class SetNonesMixin:
             if field not in data:
                 data.update({field: None})
         return data
+
+
+@contextmanager
+def performance_time(callback: Callable[[float], Any]):
+    start = time.perf_counter()
+    yield
+    ended_in = time.perf_counter() - start
+    callback(ended_in)
