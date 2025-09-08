@@ -23,7 +23,7 @@ def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm
     query = insert_into(table, list_dict_keys(table_data))
 
     try:
-        with conn_pool.getconn() as conn:
+        with conn_pool.connection() as conn:
             conn.row_factory = class_row(UserLogin)
             result: UserLogin = conn.execute(query, table_data).fetchone()
 
@@ -44,7 +44,7 @@ def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordReq
         add_and_conditions(list_dict_keys(indentify_by))
     )
     try:
-        with conn_pool.getconn() as conn:
+        with conn_pool.connection() as conn:
             conn.row_factory = class_row(UserLogin)
             result = conn.execute(query, indentify_by).fetchone()
 

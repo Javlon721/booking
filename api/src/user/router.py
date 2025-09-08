@@ -32,7 +32,7 @@ def create_new_user_info(
     query = insert_into(table, list_dict_keys(info), returning=[returning])
 
     try:
-        with conn_pool.getconn() as conn:
+        with conn_pool.connection() as conn:
             return conn.execute(query, info).fetchone()[0]
     except UniqueViolation as e:
         print(e)
@@ -58,7 +58,7 @@ def create_new_user_info(
     info.update(identify_user)
 
     try:
-        with conn_pool.getconn() as conn:
+        with conn_pool.connection() as conn:
             return conn.execute(query, info).fetchone()
     except Exception as e:
         print(e)
@@ -76,7 +76,7 @@ def create_new_user_info(
         add_and_conditions(list_dict_keys(identify_user))
     )
     try:
-        with conn_pool.getconn() as conn:
+        with conn_pool.connection() as conn:
             conn.row_factory = class_row(UserInfo)
             result: UserInfo = conn.execute(query, identify_user).fetchone()
             return result.model_dump(exclude_none=True)

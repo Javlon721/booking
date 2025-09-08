@@ -26,5 +26,5 @@ def read_item(item_id: int):
 
 @app.get("/postgres", dependencies=[AuthorizeUserDepends])
 def read_postgres(conn_pool: ConnectionPoolDepends):
-    with conn_pool.getconn() as conn:
+    with conn_pool.connection() as conn:
         return conn.execute("SELECT * from users_info").fetchall()
