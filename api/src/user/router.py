@@ -20,17 +20,19 @@ user_router = APIRouter(
     prefix="/user",
     tags=["user"])
 
+USERS_LOGIN_TABLE = 'users_login'
+USERS_INFO_TABLE = 'users_info'
+RETURNING_VALUE = "user_id"
+
 
 @user_router.post("/create/info")
 def create_new_user_info(
         user_info: Annotated[UserCreateInfo, Form()], conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    table, returning = 'users_info', "user_id"
-
     info = user_info.model_dump(exclude_unset=True, exclude_defaults=True)
     info.update({"user_id": token_data.user_id})
 
-    query = insert_into(table, list_dict_keys(info), returning=[returning])
+    query = insert_into(USERS_INFO_TABLE, list_dict_keys(info), returning=[RETURNING_VALUE])
 
     try:
         with conn_pool.connection() as conn:
@@ -50,12 +52,11 @@ def create_new_user_info(
 def create_new_user_info(
         user_info: Annotated[UserUpdateInfo, Form()], conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    table, returning = 'users_info', "user_id"
-
     identify_user = {"user_id": token_data.user_id}
     info = user_info.model_dump(exclude_none=True)
 
-    query = update_row(list_dict_keys(info), list_dict_keys(identify_user), table, returning=[returning])
+    query = update_row(list_dict_keys(info), list_dict_keys(identify_user), USERS_INFO_TABLE,
+                       returning=[RETURNING_VALUE])
     info.update(identify_user)
 
     try:
@@ -67,12 +68,12 @@ def create_new_user_info(
 
 
 @user_router.delete("/delete/info/")
-def delete_user_login(data: Annotated[delete_user_data("users_info", "user_id"), Depends()]):
+def delete_user_login(data: Annotated[delete_user_data(USERS_INFO_TABLE, RETURNING_VALUE), Depends()]):
     return data
 
 
 @user_router.delete("/delete/login/")
-def delete_user_login(data: Annotated[delete_user_data("users_login", "user_id"), Depends()]):
+def delete_user_login(data: Annotated[delete_user_data(USERS_LOGIN_TABLE, RETURNING_VALUE), Depends()]):
     return data
 
 
@@ -80,10 +81,10 @@ def delete_user_login(data: Annotated[delete_user_data("users_login", "user_id")
 def create_new_user_info(
         conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    table, columns = 'users_info', '*'
+    columns = '*'
     identify_user = {"user_id": token_data.user_id}
     query = concat_sql_queries(
-        select_from_table(columns, table),
+        select_from_table(columns, USERS_INFO_TABLE),
         add_and_conditions(list_dict_keys(identify_user))
     )
     try:
