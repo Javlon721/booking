@@ -6,7 +6,7 @@ from psycopg.rows import class_row
 
 from src.auth.db_queries import USERS_LOGIN_TABLE
 from src.auth.dependencies import AuthorizeUserDepends
-from src.auth.models import TokenData
+from src.auth.models import TokenData, UserLogin
 from src.db.pool_dependency import ConnectionPoolDepends
 from src.db.sql_queries.conditions import add_and_conditions
 from src.db.sql_queries.insert import insert_into
@@ -53,7 +53,7 @@ def create_new_user_info(
 def create_new_user_info(
         user_info: Annotated[UserUpdateInfo, Form()], conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    identify_user = {"user_id": token_data.user_id}
+    identify_user = UserLogin.indentify_by(token_data.user_id)
     info = user_info.model_dump(exclude_none=True)
 
     query = update_row(list_dict_keys(info), list_dict_keys(identify_user), USERS_INFO_TABLE,
@@ -82,7 +82,7 @@ def delete_user_login(data: Annotated[delete_user_data(USERS_LOGIN_TABLE, RETURN
 def create_new_user_info(
         conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    identify_user = {"user_id": token_data.user_id}
+    identify_user = UserLogin.indentify_by(token_data.user_id)
     query = concat_sql_queries(
         select_from_table(USERS_INFO_TABLE),
         add_and_conditions(list_dict_keys(identify_user))
