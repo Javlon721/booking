@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Annotated
 
 from pydantic import BaseModel, Field
@@ -13,12 +12,10 @@ class UserLogin(BaseModel):
         return {'user_id': user_id}
 
 
-@dataclass
-class Token:
+class Token(BaseModel):
     access_token: str
     token_type: str
 
 
-@dataclass
-class TokenData:
+class TokenData(BaseModel):
     user_id: str | None = None
