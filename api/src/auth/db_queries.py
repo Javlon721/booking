@@ -17,10 +17,10 @@ from src.utils import list_dict_keys
 def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm) -> UserLogin:
     table, returning = 'users_login', "*"
     table_data = {
-        "login": user_login.username,
+        "user_id": user_login.username,
         "password": hash_password(user_login.password),
     }
-    query = insert_into(table, list_dict_keys(table_data), returning)
+    query = insert_into(table, list_dict_keys(table_data))
 
     try:
         with conn_pool.getconn() as conn:
@@ -38,7 +38,7 @@ def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm
 
 def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
     table, pool_columns = 'users_login', "*"
-    indentify_by = {"login": form_data.username, }
+    indentify_by = {"user_id": form_data.username, }
     query = concat_sql_queries(
         select_from_table(pool_columns, table),
         add_and_conditions(list_dict_keys(indentify_by))

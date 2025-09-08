@@ -34,11 +34,14 @@ def create_new_user_info(
     try:
         with conn_pool.getconn() as conn:
             return conn.execute(query, info).fetchone()[0]
-    except UniqueViolation:
+    except UniqueViolation as e:
+        print(e)
         raise HTTPException(status_code=400, detail="User info already set")
-    except ForeignKeyViolation:
+    except ForeignKeyViolation as e:
+        print(e)
         raise HTTPException(status_code=400, detail=f"User {token_data.user_id} doesn't exist")
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=400, detail="Something went wrong")
 
 

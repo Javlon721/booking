@@ -5,8 +5,7 @@ from pydantic import BaseModel, Field
 
 
 class UserLogin(BaseModel):
-    user_id: Annotated[int, Field(gt=0)]
-    login: Annotated[str, Field(min_length=7, max_length=100)]
+    user_id: Annotated[str, Field(min_length=7, max_length=100)]
     hashed_password: Annotated[str, Field(min_length=5, max_length=100, alias='password')]
 
 
@@ -18,5 +17,4 @@ class Token:
 
 @dataclass
 class TokenData:
-    username: str | None = None
     user_id: int | None = None

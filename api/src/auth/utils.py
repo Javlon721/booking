@@ -39,7 +39,7 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
 
 
 def create_user_tokens(user: UserLogin):
-    token_data = {"sub": user.login, "user_id": user.user_id}
+    token_data = {"sub": user.user_id}
     access_token = create_access_token(token_data)
 
     return Token(access_token=access_token, token_type="bearer")

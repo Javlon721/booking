@@ -18,7 +18,7 @@ class UserUpdateInfo(UserCreateInfo, SetNonesMixin):
 
 
 class UserInfo(UserCreateInfo):
-    user_id: int
+    user_id: str
     created_at: datetime
     customer_wallet: Decimal = Field(ge=0)
     admin_wallet: Decimal = Field(ge=0)

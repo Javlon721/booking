@@ -20,12 +20,11 @@ def authorize_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
     try:
         decoded_data = jwt.decode(token, JWT_CONFIG.secret_key, algorithms=[JWT_CONFIG.algorithm])
         sub = decoded_data.get("sub")
-        user_id = decoded_data.get("user_id")
 
-        if sub is None or user_id is None:
+        if sub is None:
             raise credentials_exception
 
-        token_data = TokenData(username=sub, user_id=user_id)
+        token_data = TokenData(user_id=sub)
 
     except ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
