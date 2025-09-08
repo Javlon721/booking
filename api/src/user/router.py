@@ -8,6 +8,7 @@ from src.auth.dependencies import AuthorizeUserDepends
 from src.auth.models import TokenData
 from src.db.pool_dependency import ConnectionPoolDepends
 from src.db.sql_queries.conditions import add_and_conditions
+from src.db.sql_queries.delete_actions import delete_row
 from src.db.sql_queries.insert import insert_into
 from src.db.sql_queries.select_actions import select_from_table
 from src.db.sql_queries.update_action import update_row
@@ -60,6 +61,21 @@ def create_new_user_info(
     try:
         with conn_pool.connection() as conn:
             return conn.execute(query, info).fetchone()
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Something went wrong")
+
+
+@user_router.delete("/delete/info/")
+def delete_user_info(conn_pool: ConnectionPoolDepends, token_data: Annotated[TokenData, AuthorizeUserDepends]):
+    table, returning = 'users_info', "user_id"
+
+    identify_user = {"user_id": token_data.user_id}
+    query = delete_row(list_dict_keys(identify_user), table, returning=[returning])
+
+    try:
+        with conn_pool.connection() as conn:
+            return conn.execute(query, identify_user).fetchone()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Something went wrong")
