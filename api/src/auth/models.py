@@ -8,6 +8,10 @@ class UserLogin(BaseModel):
     user_id: Annotated[str, Field(min_length=7, max_length=100)]
     hashed_password: Annotated[str, Field(min_length=5, max_length=100, alias='password')]
 
+    @staticmethod
+    def indentify_by(user_id: str):
+        return {'user_id': user_id}
+
 
 @dataclass
 class Token:
@@ -17,4 +21,4 @@ class Token:
 
 @dataclass
 class TokenData:
-    user_id: int | None = None
+    user_id: str | None = None
