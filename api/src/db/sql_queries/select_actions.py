@@ -1,20 +1,19 @@
-from typing import Iterable
-
 from psycopg.sql import SQL, Identifier, Composed
 
-from src.db.sql_queries.columns import columns_from
+from src.db.sql_queries.utils import get_returning_values
 
 type QUERY_TYPE = Composed | SQL
 
 
-def select_from_table(columns: Iterable[str] | str, table_name: str) -> Composed:
+def select_from_table(table_name: str, columns: list[str] | None = None) -> Composed:
     """
     Example::
 
-        >>> query = select_from_table([
+        >>> query = select_from_table(
+        ... 'table_name1', [
         ... 'column1',
         ... 'column2'
-        ... ], 'table_name1')
+        ... ])
         >>> print(query.as_string())
         select "column1", "column2" from "table_name1"
 
@@ -23,12 +22,10 @@ def select_from_table(columns: Iterable[str] | str, table_name: str) -> Composed
     :return: returns sql query
     """
     template = SQL('select {columns} from {table_name}')
-    if isinstance(columns, str):
-        result_columns = SQL('*')
-    else:
-        result_columns = columns_from(columns)
+    return_vals = get_returning_values(columns)
+
     return template.format(
-        columns=result_columns,
+        columns=return_vals,
         table_name=Identifier(table_name)
     )
 
@@ -40,6 +37,6 @@ if __name__ == '__main__':
     #     'last_name': 'Hillett',
     # }
     # ).as_string())
-    print((select_from_table(['title', "book_id"], 'book')).as_string())
+    print((select_from_table('book', ['title', "book_id"])).as_string())
 
     # print(str(Composed([add_limit(10, 2), SQL('')])))

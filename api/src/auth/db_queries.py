@@ -13,14 +13,15 @@ from src.db.sql_queries.select_actions import select_from_table
 from src.db.sql_queries.utils import concat_sql_queries
 from src.utils import list_dict_keys
 
+USERS_LOGIN_TABLE = 'users_login'
+
 
 def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm) -> UserLogin:
-    table, returning = 'users_login', "*"
     table_data = {
         "user_id": user_login.username,
         "password": hash_password(user_login.password),
     }
-    query = insert_into(table, list_dict_keys(table_data))
+    query = insert_into(USERS_LOGIN_TABLE, list_dict_keys(table_data))
 
     try:
         with conn_pool.connection() as conn:
@@ -37,10 +38,9 @@ def create_user(conn_pool: ConnectionPool, user_login: OAuth2PasswordRequestForm
 
 
 def get_user_credentials(conn_pool: ConnectionPool, form_data: OAuth2PasswordRequestForm) -> UserLogin | None:
-    table, pool_columns = 'users_login', "*"
     indentify_by = {"user_id": form_data.username, }
     query = concat_sql_queries(
-        select_from_table(pool_columns, table),
+        select_from_table(USERS_LOGIN_TABLE),
         add_and_conditions(list_dict_keys(indentify_by))
     )
     try:

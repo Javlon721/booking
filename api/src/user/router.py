@@ -4,6 +4,7 @@ from fastapi import APIRouter, Form, HTTPException, Depends
 from psycopg.errors import UniqueViolation, ForeignKeyViolation
 from psycopg.rows import class_row
 
+from src.auth.db_queries import USERS_LOGIN_TABLE
 from src.auth.dependencies import AuthorizeUserDepends
 from src.auth.models import TokenData
 from src.db.pool_dependency import ConnectionPoolDepends
@@ -20,7 +21,6 @@ user_router = APIRouter(
     prefix="/user",
     tags=["user"])
 
-USERS_LOGIN_TABLE = 'users_login'
 USERS_INFO_TABLE = 'users_info'
 RETURNING_VALUE = "user_id"
 
@@ -81,10 +81,9 @@ def delete_user_login(data: Annotated[delete_user_data(USERS_LOGIN_TABLE, RETURN
 def create_new_user_info(
         conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    columns = '*'
     identify_user = {"user_id": token_data.user_id}
     query = concat_sql_queries(
-        select_from_table(columns, USERS_INFO_TABLE),
+        select_from_table(USERS_INFO_TABLE),
         add_and_conditions(list_dict_keys(identify_user))
     )
     try:
