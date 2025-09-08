@@ -22,3 +22,7 @@ class UserInfo(UserCreateInfo):
     created_at: datetime
     customer_wallet: Decimal = Field(ge=0)
     admin_wallet: Decimal = Field(ge=0)
+
+    @staticmethod
+    def foreign_key(value: str):
+        return {'user_id': value}

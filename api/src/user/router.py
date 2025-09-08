@@ -30,7 +30,8 @@ def create_new_user_info(
         user_info: Annotated[UserCreateInfo, Form()], conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
     info = user_info.model_dump(exclude_unset=True, exclude_defaults=True)
-    info.update({"user_id": token_data.user_id})
+    foreign_key = UserInfo.foreign_key(token_data.user_id)
+    info.update(foreign_key)
 
     query = insert_into(USERS_INFO_TABLE, list_dict_keys(info), returning=[RETURNING_VALUE])
 
