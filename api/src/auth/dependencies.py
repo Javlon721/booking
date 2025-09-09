@@ -1,12 +1,11 @@
 from typing import Annotated
 
-import jwt
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from jwt import ExpiredSignatureError
 
 from src.auth.models import TokenData
-from src.config import JWT_CONFIG
+from src.auth.utils import decode_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
@@ -18,7 +17,7 @@ def authorize_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenData:
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        decoded_data = jwt.decode(token, JWT_CONFIG.secret_key, algorithms=[JWT_CONFIG.algorithm])
+        decoded_data = decode_token(token)
         sub = decoded_data.get("sub")
 
         if sub is None:

@@ -53,3 +53,7 @@ def create_user_tokens(user: UserLogin):
     access_token = create_access_token(token_data)
     refresh_token = create_refresh_token(token_data)
     return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
+
+
+def decode_token(token: str) -> dict[str, Any]:
+    return jwt.decode(token, JWT_CONFIG.secret_key, algorithms=[JWT_CONFIG.algorithm])
