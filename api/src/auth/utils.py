@@ -38,6 +38,16 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
     return result
 
 
+def create_refresh_token(data: dict[str, Any]) -> str:
+    to_encode: dict = deep_copy(data)
+    expire = datetime.now(timezone.utc) + timedelta(hours=JWT_CONFIG.access_token_expire_minutes)
+    addition_data = {"refresh": True, "exp": expire}
+
+    to_encode.update(addition_data)
+    result = jwt.encode(to_encode, JWT_CONFIG.secret_key, algorithm=JWT_CONFIG.algorithm)
+    return result
+
+
 def create_user_tokens(user: UserLogin):
     token_data = {"sub": user.user_id}
     access_token = create_access_token(token_data)
