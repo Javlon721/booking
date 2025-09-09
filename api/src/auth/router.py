@@ -4,8 +4,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.auth.db_queries import create_user, authenticate_user
+from src.auth.dependencies import renew_access_token
 from src.auth.models import Token
-from src.auth.utils import create_user_tokens, create_refresh_token
+from src.auth.utils import create_user_tokens
 from src.db.pool_dependency import ConnectionPoolDepends
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -32,8 +33,6 @@ def sing_up(
     return tokens
 
 
-@auth_router.get("/refresh")
-def refresh_token():
-    return create_refresh_token({
-        "sub": "juuzou"
-    })
+@auth_router.get("/token/refresh")
+def refresh_token(new_access_token: Annotated[Token, Depends(renew_access_token)]):
+    return new_access_token.model_dump(exclude_none=True)
