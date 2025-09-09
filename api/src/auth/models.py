@@ -20,3 +20,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: str | None = None
+
+
+class RefreshTokenData(TokenData):
+    refresh: bool | None = None

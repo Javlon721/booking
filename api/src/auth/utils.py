@@ -4,7 +4,7 @@ from typing import Any
 import jwt
 from passlib.context import CryptContext
 
-from src.auth.models import UserLogin, Token
+from src.auth.models import UserLogin, Token, TokenData, RefreshTokenData
 from src.config import JWT_CONFIG
 from src.utils import deep_copy
 
@@ -39,19 +39,16 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
 
 
 def create_refresh_token(data: dict[str, Any]) -> str:
-    to_encode: dict = deep_copy(data)
-    expire = datetime.now(timezone.utc) + timedelta(hours=JWT_CONFIG.access_token_expire_minutes)
-    addition_data = {"refresh": True, "exp": expire}
-
-    to_encode.update(addition_data)
-    result = jwt.encode(to_encode, JWT_CONFIG.secret_key, algorithm=JWT_CONFIG.algorithm)
-    return result
+    return create_access_token(data, expires_delta=timedelta(hours=JWT_CONFIG.refresh_token_expire_hours))
 
 
-def create_user_tokens(user: UserLogin):
-    token_data = {"sub": user.user_id}
+def create_user_tokens(user: UserLogin) -> Token:
+    token_data = TokenData(user_id=user.user_id).model_dump()
+    refresh_token_data = RefreshTokenData(user_id=user.user_id, refresh=True).model_dump()
+
     access_token = create_access_token(token_data)
-    refresh_token = create_refresh_token(token_data)
+    refresh_token = create_refresh_token(refresh_token_data)
+
     return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
 
 
