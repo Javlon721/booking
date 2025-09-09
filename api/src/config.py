@@ -21,7 +21,8 @@ class DBConfig:
 class JWTConfig:
     algorithm: str
     secret_key: str
-    access_token_expire_minutes: float
+    access_token_expire_minutes: int
+    refresh_token_expire_hours: int
 
 
 class _Settings(BaseSettings):
@@ -40,7 +41,8 @@ class _Settings(BaseSettings):
     # OAuth2
     JWT_ALGORITHM: str
     JWT_SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: float
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_HOURS: int
 
     def db_config(self) -> DBConfig:
         return DBConfig(
@@ -57,6 +59,7 @@ class _Settings(BaseSettings):
             algorithm=self.JWT_ALGORITHM,
             secret_key=self.JWT_SECRET_KEY,
             access_token_expire_minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES,
+            refresh_token_expire_hours=self.REFRESH_TOKEN_EXPIRE_HOURS,
         )
 
 
