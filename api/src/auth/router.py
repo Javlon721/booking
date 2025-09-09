@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from src.auth.db_queries import create_user, authenticate_user
 from src.auth.models import Token
-from src.auth.utils import create_user_tokens
+from src.auth.utils import create_user_tokens, create_refresh_token
 from src.db.pool_dependency import ConnectionPoolDepends
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -30,3 +30,10 @@ def sing_up(
     new_user = create_user(conn_pool, form_data)
     tokens = create_user_tokens(new_user)
     return tokens
+
+
+@auth_router.get("/refresh")
+def refresh_token():
+    return create_refresh_token({
+        "sub": "juuzou"
+    })

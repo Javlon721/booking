@@ -51,5 +51,5 @@ def create_refresh_token(data: dict[str, Any]) -> str:
 def create_user_tokens(user: UserLogin):
     token_data = {"sub": user.user_id}
     access_token = create_access_token(token_data)
-
-    return Token(access_token=access_token, token_type="bearer")
+    refresh_token = create_refresh_token(token_data)
+    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
