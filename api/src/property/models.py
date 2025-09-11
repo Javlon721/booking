@@ -21,7 +21,7 @@ class PropertyUpdateInfo(PropertyCreateInfo, SetNonesMixin):
 
 class PropertyInfo(PropertyCreateInfo):
     owner_id: str
-    property_id: str
+    property_id: int
     created_at: datetime
 
     @staticmethod
