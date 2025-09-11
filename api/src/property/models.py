@@ -27,3 +27,7 @@ class PropertyInfo(PropertyCreateInfo):
     @staticmethod
     def foreign_key(value: str):
         return {'owner_id': value}
+
+    @staticmethod
+    def identify_property(value: int):
+        return {'property_id': value}
