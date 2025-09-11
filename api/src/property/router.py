@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException
-from psycopg.errors import UniqueViolation, ForeignKeyViolation
 
 from src.auth.dependencies import AuthorizeUserDepends
 from src.auth.models import TokenData
@@ -30,12 +29,6 @@ def create_property(
     try:
         with conn_pool.connection() as conn:
             return conn.execute(query, info).fetchone()[0]
-    except UniqueViolation as e:
-        print(e)
-        raise HTTPException(status_code=400, detail="User info already set")
-    except ForeignKeyViolation as e:
-        print(e)
-        raise HTTPException(status_code=400, detail=f"User {token_data.user_id} doesn't exist")
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail="Something went wrong")
