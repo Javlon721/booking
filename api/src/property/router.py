@@ -93,16 +93,16 @@ def get_user_property_by_id(
         property_id: int,
         conn_pool: ConnectionPoolDepends,
         token_data: Annotated[TokenData, AuthorizeUserDepends]):
-    identify_properties = PropertyInfo.foreign_key(token_data.user_id)
-    identify_properties.update({"property_id": property_id})
+    identify_property = PropertyInfo.foreign_key(token_data.user_id)
+    identify_property.update({"property_id": property_id})
     query = concat_sql_queries(
         select_from_table(PROPERTY_TABLE),
-        add_and_conditions(list_dict_keys(identify_properties))
+        add_and_conditions(list_dict_keys(identify_property))
     )
     try:
         with conn_pool.connection() as conn:
             conn.row_factory = class_row(PropertyInfo)
-            result: PropertyInfo = conn.execute(query, identify_properties).fetchone()
+            result: PropertyInfo = conn.execute(query, identify_property).fetchone()
             if not result:
                 return None
             return result.model_dump(exclude_none=True)
