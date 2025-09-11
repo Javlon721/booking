@@ -7,6 +7,7 @@ from src.auth.dependencies import AuthorizeUserDepends
 from src.auth.models import TokenData
 from src.db.pool_dependency import ConnectionPoolDepends
 from src.db.sql_queries.conditions import add_and_conditions
+from src.db.sql_queries.delete_actions import delete_row
 from src.db.sql_queries.insert import insert_into
 from src.db.sql_queries.select_actions import select_from_table
 from src.db.sql_queries.update_action import update_row
@@ -110,6 +111,26 @@ def get_user_property_by_id(
             if not result:
                 return None
             return result.model_dump(exclude_none=True)
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Something went wrong")
+
+
+@property_router.delete("/{property_id}")
+def delete_user_property(
+        property_id: int,
+        conn_pool: ConnectionPoolDepends,
+        token_data: Annotated[TokenData, AuthorizeUserDepends]
+):
+    identify_user_property = PropertyInfo.foreign_key(token_data.user_id)
+    identify_property = PropertyInfo.identify_property(property_id)
+    identify_property.update(identify_user_property)
+
+    query = delete_row(list_dict_keys(identify_property), PROPERTY_TABLE, returning=[RETURNING_VALUE])
+
+    try:
+        with conn_pool.connection() as conn:
+            return conn.execute(query, identify_property).fetchone()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Something went wrong")
