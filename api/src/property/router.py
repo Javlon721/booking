@@ -79,10 +79,10 @@ def get_user_properties(
     try:
         with conn_pool.connection() as conn:
             conn.row_factory = class_row(PropertyInfo)
-            result: PropertyInfo = conn.execute(query, identify_properties).fetchone()
+            result: list[PropertyInfo] = conn.execute(query, identify_properties).fetchall()
             if not result:
                 return None
-            return result.model_dump(exclude_none=True)
+            return result
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Something went wrong")
